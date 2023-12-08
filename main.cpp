@@ -9,7 +9,7 @@ Developed by Luka Siktar
 */
 #include "ArenaApi.h"
 #include <iostream>
-#include <chrono>
+//#include <chrono>
 
 #include <opencv2/opencv.hpp>
 #include "MyWidget.h"
@@ -19,6 +19,7 @@ Developed by Luka Siktar
 #include "OCRcustom.h"
 
 #define TIMEOUT 2000
+#define EXPOSURE_TIME 90000.0 //in microseconds
 
 //Function to convert image from Arena format to OpenCV
 cv::Mat ConvertArenaImageToMat(Arena::IImage* pImage) {
@@ -57,9 +58,25 @@ int main(int argc, char* argv[])
 
 
     //Creating an instance for performing inference (loading YOLOv8 neural network and file with its classes)
-    bool runOnGPU = true;
+    bool runOnGPU = false;
     std::string projectBasePath = "C:\\Users\\lukas\\OneDrive\\Desktop\\Projekt\\VisualStudio\\Qt_PCB_detecton_with_LUCID";
     Inference inf(projectBasePath + "\\source\\models\\YOLOv8_PCB.onnx", cv::Size(640, 640), projectBasePath + "\\source\\classes\\YOLOv8m_PCB_classes.txt", runOnGPU);
+
+    //Loading classes for inspection and OCR
+    std::ifstream inputFile1(projectBasePath + "\\source\\classes\\inspection_classes.txt");
+    std::vector<std::string> inspection_elements;
+    if (inputFile1.is_open()) {
+        std::string line;
+        while (std::getline(inputFile1, line)) { inspection_elements.push_back(line); }
+        inputFile1.close();
+    }
+    std::ifstream inputFile2(projectBasePath + "\\source\\classes\\OCR_classes.txt");
+    std::vector<std::string> OCR_elements;
+    if (inputFile2.is_open()) {
+        std::string line;
+        while (std::getline(inputFile2, line)) { OCR_elements.push_back(line); }
+        inputFile2.close();
+    }
 
     //Additional modification for constant detection and bounding box colors
     Colors color(projectBasePath + "\\source\\classes\\YOLOv8m_PCB_classes.txt");
@@ -76,10 +93,28 @@ int main(int argc, char* argv[])
     Arena::IDevice* pDevice = pSystem->CreateDevice(deviceInfos[0]);
     GenICam::gcstring acquisitionModeInitial = Arena::GetNodeValue<GenICam::gcstring>(pDevice->GetNodeMap(), "AcquisitionMode");
     Arena::SetNodeValue<GenICam::gcstring>(pDevice->GetNodeMap(), "AcquisitionMode", "Continuous");
+
     Arena::SetNodeValue<GenICam::gcstring>(pDevice->GetTLStreamNodeMap(), "StreamBufferHandlingMode", "NewestOnly");
     GenApi::CEnumerationPtr pTransportStreamProtocolEnum = pDevice->GetNodeMap()->GetNode("TransportStreamProtocol");
     Arena::SetNodeValue<bool>(pDevice->GetTLStreamNodeMap(), "StreamAutoNegotiatePacketSize", true);
     Arena::SetNodeValue<bool>(pDevice->GetTLStreamNodeMap(), "StreamPacketResendEnable", true);
+    //Set exposure time
+    GenApi::CFloatPtr pExposureTime = pDevice->GetNodeMap()->GetNode("ExposureTime");
+    double exposureTime = EXPOSURE_TIME;
+    pExposureTime->SetValue(exposureTime);
+    //Set Pixel format
+    GenApi::CEnumerationPtr pPixelFormat = pDevice->GetNodeMap()->GetNode("PixelFormat");
+    GenApi::CEnumEntryPtr pPixelFormatEntry = pPixelFormat->GetEntryByName("RGB8"); // Replace with your desired pixel format
+    pPixelFormat->SetIntValue(pPixelFormatEntry->GetValue());
+    //Set Gain
+    GenApi::CFloatPtr pGain = pDevice->GetNodeMap()->GetNode("Gain");
+    double gainValue = 3.0; // Set gain value
+    pGain->SetValue(gainValue);
+    //Set Gamma
+    GenApi::CFloatPtr pGamma = pDevice->GetNodeMap()->GetNode("Gamma");
+    double gammaValue = 0.75; // Set gain value
+    pGamma->SetValue(gammaValue);
+
 
     cv::Mat img;
     pDevice->StartStream();
@@ -87,7 +122,7 @@ int main(int argc, char* argv[])
     //Segment of code performed after the "Capture" button is pressed
     cv::Mat capturedFrame;
     QObject::connect(&widget, &MyWidget::captureRequested, [&]() {
-        auto start = std::chrono::high_resolution_clock::now();
+        //auto start = std::chrono::high_resolution_clock::now();
 
         capturedFrame= AcquireImages(pDevice);
 
@@ -115,21 +150,27 @@ int main(int argc, char* argv[])
                 detection.detection_id = a++;                   //rewrite detection class_id-s to enable inspection of element with the same class_name and class_id          
 
                 //Inspection
-                if (detection.className == "40_pins" or detection.className == "6_pins" or detection.className == "Check_pattern_1" or detection.className == "Check_pattern_2" or detection.className == "Check_pattern_3" or detection.className == "Check_pattern_4" or detection.className == "CN7" or detection.className == "CN8" or detection.className == "CN9" or detection.className == "CN10") {
-                    Inspection photo;
-                    inspections.push_back(photo.inspect(image1, detection));
-                    inspections_num.push_back(photo.boxes_number);
-                    inspections_name.push_back(detection.className);
+                for (auto obj : inspection_elements) {
+                    //if (detection.className == "40_pins" or detection.className == "6_pins" or detection.className == "Check_pattern_1" or detection.className == "Check_pattern_2" or detection.className == "Check_pattern_3" or detection.className == "Check_pattern_4" or detection.className == "CN7" or detection.className == "CN8" or detection.className == "CN9" or detection.className == "CN10") {
+                    if (detection.className == obj) {
+                        Inspection photo;
+                        inspections.push_back(photo.inspect(image1, detection));
+                        inspections_num.push_back(photo.boxes_number);
+                        inspections_name.push_back(detection.className);
+                    }
                 }
 
                 //OCR read
-                if (detection.className == "ARDUINO" or detection.className == "UNO_white" /*or detection.className == "NVIDIA."*/ or detection.className == "Arduino_UNO_model" or detection.className == "RaspberryPi_model" or detection.className == "STM32_model") {
-                    OCRread OCRobject(image1);
-                    OCR_reads.push_back(OCRobject.outputText);
-                    if (image1.cols > 100 or image1.rows > 100) {
-                        cv::resize(image1, image1, cv::Size(image1.cols / 2, image1.rows / 2));
+                for (auto obj : OCR_elements) {
+                    if (detection.className == obj) {
+                        //if (detection.className == "ARDUINO" or detection.className == "UNO_white" or detection.className == "NVIDIA." or detection.className == "Arduino_UNO_model" or detection.className == "RaspberryPi_model" or detection.className == "STM32_model") {
+                        OCRread OCRobject(image1);
+                        OCR_reads.push_back(OCRobject.outputText);
+                        if (image1.cols > 100 or image1.rows > 100) {
+                            cv::resize(image1, image1, cv::Size(image1.cols / 2, image1.rows / 2));
+                        }
+                        OCR_read_images.push_back(image1);
                     }
-                    OCR_read_images.push_back(image1);
                 }
             }
             widget.showInspections(inspections, inspections_name, inspections_num);
@@ -155,9 +196,9 @@ int main(int argc, char* argv[])
 
                 cv::rectangle(capturedFrame, textBox, color, cv::FILLED);
                 cv::putText(capturedFrame, classString, cv::Point(box.x + 5, box.y - 10), cv::FONT_HERSHEY_DUPLEX, 1, cv::Scalar(0, 0, 0), 2, 0);
-                auto end = std::chrono::high_resolution_clock::now();
-                auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-                cv::putText(capturedFrame, to_string(duration.count()), cv::Point(300, 300), cv::FONT_HERSHEY_DUPLEX, 10, cv::Scalar(0, 0, 0), 2, 0);
+                //auto end = std::chrono::high_resolution_clock::now();
+                //auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+                //cv::putText(capturedFrame, to_string(duration.count()), cv::Point(300, 300), cv::FONT_HERSHEY_DUPLEX, 10, cv::Scalar(0, 0, 0), 2, 0);
 
 
             }
@@ -167,11 +208,13 @@ int main(int argc, char* argv[])
         widget.caputureDisplayImage(capturedFrame);
         });
     //Segment of a code performed after "Exit" button is pressed
-    QObject::connect(&widget, &MyWidget::exitRequested, [&]() { app.closeAllWindows();
+    QObject::connect(&widget, &MyWidget::exitRequested, [&]() { 
     pDevice->StopStream();
     Arena::SetNodeValue<GenICam::gcstring>(pDevice->GetNodeMap(), "AcquisitionMode", acquisitionModeInitial);
     pSystem->DestroyDevice(pDevice);
     Arena::CloseSystem(pSystem);
+    app.closeAllWindows();
+    exit(1);
         });
 
 

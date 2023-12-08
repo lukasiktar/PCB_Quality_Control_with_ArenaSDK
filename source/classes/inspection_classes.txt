@@ -1,0 +1,10 @@
+40_pins
+6_pins
+Check_pattern_1
+Check_pattern_2
+Check_pattern_3
+Check_pattern_4
+CN7
+CN8
+CN9
+CN10

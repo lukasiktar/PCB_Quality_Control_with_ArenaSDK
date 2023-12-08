@@ -8,7 +8,7 @@ void OCRread::OCRreadText() {
     //Image on which OCR will be performed
     cv::Mat OCRimage = OCRimage0;
     cv::cvtColor(OCRimage, OCRimage, cv::COLOR_BGR2GRAY);
-
+  
     char* outText;
 
     tesseract::TessBaseAPI* api = new tesseract::TessBaseAPI();

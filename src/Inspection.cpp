@@ -13,17 +13,25 @@ cv::Mat Inspection::inspect(cv::Mat frame, Detection detection) {
 	}
 
 	double thresholdValue = cv::mean(grey_image)[0];
-	std::cout << "Thresh:" << thresholdValue << std::endl;
-	int thresholdType = (thresholdValue < 150) ? cv::THRESH_BINARY : cv::THRESH_BINARY_INV;
-	int C = (thresholdValue < 150) ? -35 : 20;
+	int thresholdType = (thresholdValue < 140) ? cv::THRESH_BINARY : cv::THRESH_BINARY_INV;
+	int C = (thresholdValue < 140) ? -18 : 10;
 	std::vector<int> thresh_values;
-	if (thresholdType < 150) {
-		thresh_values = { 141,161,181,201,221 };
+	if (thresholdValue < 140) {
+		thresh_values = { 41,61,81};
+
 	}
 	else {
-		thresh_values = { 61,81,101 };
+		thresh_values = {41,61,81,101};
 	}
+	cv::Scalar color;
+	if (thresholdValue < 140) {
+		color = cv::Scalar(0.0, 100.0, 255.0);
 
+	}
+	else {
+		color = cv::Scalar(200.0, 100.0, 0.0);
+
+	}
 
 	cv::Mat binary_image;
 	//std::vector<int> thresh_values = { 181,201,241 };		//Set up descrete range of threshold for adaptive thresholding
@@ -59,7 +67,7 @@ cv::Mat Inspection::inspect(cv::Mat frame, Detection detection) {
 	int a = 0;
 	bool inter = false;
 	for (int i = 0; i < min_contours.size(); i++) {
-		if (contourArea(min_contours.at(i)) > 20) {		//Filtering the contours with area smaller than 20 pixels	
+		if (contourArea(min_contours.at(i)) > 30) {		//Filtering the contours with area smaller than 20 pixels	
 			cv::Rect bounding = boundingRect(min_contours.at(i));
 			bounding_boxes_zero.push_back(bounding);
 			intersect = 0;
@@ -81,6 +89,13 @@ cv::Mat Inspection::inspect(cv::Mat frame, Detection detection) {
 		}
 	}
 
+
+
+	// Sort the bounding boxes based on their areas
+	std::sort(bounding_boxes_zero_merged.begin(), bounding_boxes_zero_merged.end(), [](const cv::Rect& a, const cv::Rect& b) {
+		return a.area() > b.area();  // Sort in descending order based on area
+		});
+
 	//If there is bounding boxes that intersects, remove the smaller
 	std::vector<cv::Rect> bounding_boxes;
 	bool inter_1 = false;
@@ -94,12 +109,12 @@ cv::Mat Inspection::inspect(cv::Mat frame, Detection detection) {
 				}
 			}
 		}
-		if (inter_1 == false) {
-			bounding_boxes.push_back(a);
-		}
-		else {
-			inter_1 = false;
-		}
+	if (inter_1 == false) {
+		bounding_boxes.push_back(a);
+	}
+	else {
+		inter_1 = false;
+	}
 	}
 
 	//FILTERING THE CONTOURS: END -----------------------------------------------------------------------------------------------------------
@@ -108,17 +123,19 @@ cv::Mat Inspection::inspect(cv::Mat frame, Detection detection) {
 	boxes_number = 0;
 	for (int i = 0; i < bounding_boxes.size(); i++) {
 
-		cv::Scalar color(100.0, 200.0, 200.0);
+		//cv::Scalar color(100.0, 200.0, 200.0);
 		cv::Rect bounding = bounding_boxes[i];
-		if (bounding.height > 2 && bounding.width > 2 && (bounding.height / bounding.width < 2 && bounding.width / bounding.height < 2)) {
+		if (bounding.height > 2 && bounding.width > 2 && (bounding.height / bounding.width < 2.5 && bounding.width / bounding.height < 2.5)) {
 			cv::rectangle(image, bounding, color, 2, cv::LINE_8, 0);
 			boxes_number++;
 		}
 	}
 	boxes_number = static_cast<int>(boxes_number);
-
 	if (image.cols > 200 or image.rows > 200) {
 		cv::resize(image, image, cv::Size(image.cols / 2, image.rows / 2));
+	}
+	if (image.cols > 200 or image.rows > 200) {
+		cv::resize(image, image, cv::Size(image.cols / 1.2, image.rows / 1.2));
 	}
 	return image;
 }
