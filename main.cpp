@@ -10,7 +10,6 @@ Developed by Luka Siktar
 #include "ArenaApi.h"
 #include <iostream>
 //#include <chrono>
-
 #include <opencv2/opencv.hpp>
 #include "MyWidget.h"
 #include "colors.h"
@@ -19,7 +18,7 @@ Developed by Luka Siktar
 #include "OCRcustom.h"
 
 #define TIMEOUT 2000
-#define EXPOSURE_TIME 90000.0 //in microseconds
+#define EXPOSURE_TIME 95000.0 //in microseconds
 
 //Function to convert image from Arena format to OpenCV
 cv::Mat ConvertArenaImageToMat(Arena::IImage* pImage) {
@@ -60,7 +59,7 @@ int main(int argc, char* argv[])
     //Creating an instance for performing inference (loading YOLOv8 neural network and file with its classes)
     bool runOnGPU = false;
     std::string projectBasePath = "C:\\Users\\lukas\\OneDrive\\Desktop\\Projekt\\VisualStudio\\Qt_PCB_detecton_with_LUCID";
-    Inference inf(projectBasePath + "\\source\\models\\YOLOv8_PCB.onnx", cv::Size(640, 640), projectBasePath + "\\source\\classes\\YOLOv8m_PCB_classes.txt", runOnGPU);
+    Inference inf(projectBasePath + "\\source\\models\\YOLOv8m_PCB.onnx", cv::Size(640, 640), projectBasePath + "\\source\\classes\\YOLOv8m_PCB_classes.txt", runOnGPU);
 
     //Loading classes for inspection and OCR
     std::ifstream inputFile1(projectBasePath + "\\source\\classes\\inspection_classes.txt");
@@ -98,6 +97,7 @@ int main(int argc, char* argv[])
     GenApi::CEnumerationPtr pTransportStreamProtocolEnum = pDevice->GetNodeMap()->GetNode("TransportStreamProtocol");
     Arena::SetNodeValue<bool>(pDevice->GetTLStreamNodeMap(), "StreamAutoNegotiatePacketSize", true);
     Arena::SetNodeValue<bool>(pDevice->GetTLStreamNodeMap(), "StreamPacketResendEnable", true);
+    
     //Set exposure time
     GenApi::CFloatPtr pExposureTime = pDevice->GetNodeMap()->GetNode("ExposureTime");
     double exposureTime = EXPOSURE_TIME;
@@ -108,13 +108,13 @@ int main(int argc, char* argv[])
     pPixelFormat->SetIntValue(pPixelFormatEntry->GetValue());
     //Set Gain
     GenApi::CFloatPtr pGain = pDevice->GetNodeMap()->GetNode("Gain");
-    double gainValue = 3.0; // Set gain value
+    double gainValue = 4.0; // Set gain value
     pGain->SetValue(gainValue);
     //Set Gamma
     GenApi::CFloatPtr pGamma = pDevice->GetNodeMap()->GetNode("Gamma");
-    double gammaValue = 0.75; // Set gain value
+    double gammaValue = 0.65; // Set gain value
     pGamma->SetValue(gammaValue);
-
+    
 
     cv::Mat img;
     pDevice->StartStream();

@@ -68,7 +68,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Link>
-      <AdditionalDependencies>opencv_world480.lib;leptonica-1.83.1.lib;tesseract53.lib;Arena_v140.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opencv_world480.lib;leptonica-1.83.1.lib;tesseract53.lib;Arena_v140.lib;GenApi_MD_VC140_v3_3_LUCID.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>C:\Program Files\Lucid Vision Labs\Arena SDK\lib64</AdditionalLibraryDirectories>
     </Link>
     <ClCompile>

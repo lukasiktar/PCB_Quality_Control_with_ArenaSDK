@@ -1,5 +1,6 @@
 40_pins
 6_pins
+PoE
 Check_pattern_1
 Check_pattern_2
 Check_pattern_3
