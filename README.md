@@ -53,6 +53,7 @@ YOLOv8Model.ipynb - Google Colab script to train YOLOv8 model on created PCB_det
 
 9. Arduino UNO
 (Detection)
+
 ![Snimka zaslona 2024-01-02 103745](https://github.com/robosiki/PCB_Quality_Control_with_ArenaSDK/assets/108216309/b820d644-8bf7-4f66-9718-b7f4a61a4006)
 ![Snimka zaslona 2024-01-02 103801](https://github.com/robosiki/PCB_Quality_Control_with_ArenaSDK/assets/108216309/548e06d8-601a-4a81-bbbe-3ad303f30e96)
 
