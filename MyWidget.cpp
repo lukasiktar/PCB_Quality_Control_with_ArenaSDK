@@ -5,11 +5,14 @@ QString buttonStyle1 = "QPushButton {"
 "    background-color: white; /* Green background */"
 "    color: black; /* White text color */"
 "    border-style: outset;\n"
-"    border-width: 1px;\n"
+"    border-width: 2px;\n"
 "    border-color: gray;\n"
 "    border-radius: 5px;"
 "    font: bold 14px;\n"
 "    padding: 10px 20px; /* Padding */"
+"}"
+"QPushButton:hover {"
+"    background-color: #e0e0e0;"  // Lighter color on hover
 "}"
 "QPushButton:pressed {"
 "    background-color: blue; /* Darker green on hover */"
@@ -20,20 +23,27 @@ QString buttonStyle2 = "QPushButton {"
 "    background-color: white; /* Green background */"
 "    color: black; /* White text color */"
 "    border-style: outset;\n"
-"    border-width: 1px;\n"
+"    border-width: 2px;\n"
 "    border-color: gray;\n"
 "    border-radius: 5px;"
 "    font: bold 14px;\n"
 "    padding: 10px 20px; /* Padding */"
+"}"
+"QPushButton:hover {"
+"    background-color: #e0e0e0;"  // Lighter color on hover
 "}"
 "QPushButton:pressed {"
 "    background-color: red; /* Darker green on hover */"
 "    color: white; /* White text color */"
 "}";
 
+//QString widgetStyle = "background-color: #808000;"; // Use a darker shade of gray, e.g., #808080
+
 
 MyWidget::MyWidget(QWidget* parent) : QWidget(parent)
 {
+   //setStyleSheet(widgetStyle);
+
     //Adding img label:
     img = new QLabel(this);
     QVBoxLayout* layout = new QVBoxLayout;
@@ -50,6 +60,7 @@ MyWidget::MyWidget(QWidget* parent) : QWidget(parent)
     captureButton = new QPushButton("Capture Photo", this);
     captureButton->setStyleSheet(buttonStyle1);
     captureButton->setGeometry(10, 220, 150, 40);
+    captureButton->setToolTip("Capture Photo");
     layout1->addWidget(captureButton);
     layout1->addLayout(layout);
     connect(captureButton, &QPushButton::clicked, this, &MyWidget::capturePhoto);
@@ -58,6 +69,7 @@ MyWidget::MyWidget(QWidget* parent) : QWidget(parent)
     exitButton = new QPushButton("Exit", this);
     exitButton->setStyleSheet(buttonStyle2);
     exitButton->setGeometry(180, 220, 150, 40);
+    exitButton->setToolTip("Exit Application");
     layout->addWidget(exitButton);
     connect(exitButton, &QPushButton::clicked, this, &MyWidget::exitApplication);
 
@@ -66,10 +78,11 @@ MyWidget::MyWidget(QWidget* parent) : QWidget(parent)
     cap->setGeometry(10, 300, 800, 500);
     layout->addWidget(cap);
 
+
     //Adding text to GUI:
     captured_image_sign = new QLabel(this);
     captured_image_sign->setText("Captured Image:");
-    captured_image_sign->setGeometry(10, 270, 200, 30);
+    captured_image_sign->setGeometry(10, 270, 300, 30);
     captured_image_sign->setFont(heading_font);
     layout->addWidget(captured_image_sign);
 
@@ -100,7 +113,7 @@ MyWidget::MyWidget(QWidget* parent) : QWidget(parent)
     //OCRdetection2_sign->setFont(text_font);
     layout->addWidget(OCRdetection2_sign);
     OCRdetection2 = new QLabel(this);
-    OCRdetection2->setGeometry(520, 20, 100, 120);
+    OCRdetection2->setGeometry(520, 20, 170, 120);
     layout->addWidget(OCRdetection2);
 
     OCRdetection3_sign = new QLabel(this);
@@ -108,9 +121,16 @@ MyWidget::MyWidget(QWidget* parent) : QWidget(parent)
     //OCRdetection3_sign->setFont(text_font);
     layout->addWidget(OCRdetection3_sign);
     OCRdetection3 = new QLabel(this);
-    OCRdetection3->setGeometry(640, 20, 100, 120);
+    OCRdetection3->setGeometry(640, 20, 150, 120);
     layout->addWidget(OCRdetection3);
-
+    
+    //Detection counter
+    detection_counter = new QLabel(this);
+    detection_counter->setFont(text_font);
+    layout->addWidget(detection_counter);
+  
+   
+    
     //Adding inspecitons:
     inspection1_name = new QLabel(this);
     inspection1_name->setFont(text_font);
@@ -171,6 +191,8 @@ void MyWidget::videoDisplayImage(cv::Mat frame)
     QImage qtImage(frame.data, frame.cols, frame.rows, frame.step, QImage::Format_BGR888);  //Transform cv::Mat -> QImage
     image = qtImage;
     img->setPixmap(QPixmap::fromImage(qtImage));
+    img->setToolTip("Video Display");
+
 
 }
 void MyWidget::caputureDisplayImage(cv::Mat frame)
@@ -178,6 +200,14 @@ void MyWidget::caputureDisplayImage(cv::Mat frame)
     QImage qtImage(frame.data, frame.cols, frame.rows, frame.step, QImage::Format_BGR888);  //Transform cv::Mat -> QImage
     cap_image = qtImage;
     cap->setPixmap(QPixmap::fromImage(qtImage));
+
+
+}
+void MyWidget::showDetectionCounter(int detections) {
+    detection_counter->clear();
+    std::string detections_printed = "Detected elements: " + std::to_string(detections);
+    detection_counter->setGeometry(150, 271, 300, 30);
+    detection_counter->setText(QString::fromStdString(detections_printed));
 
 
 }
@@ -200,7 +230,7 @@ void MyWidget::showInspections(std::vector<cv::Mat> inspections, std::vector<std
 
     for (auto i = 0; i < inspections.size(); i++) {
         if (i == 0) {
-            inspection1_name->setGeometry(820, 40, 140, 30);
+            inspection1_name->setGeometry(820, 40, 140, 40);
             inspection1_name->setText(QString::fromStdString(inspections_name[i]));
             std::string inspections_printed = "Inspected: " + std::to_string(inspections_num[i]);
             inspection1_number->setGeometry(820, 70, 140, 20);
@@ -210,7 +240,7 @@ void MyWidget::showInspections(std::vector<cv::Mat> inspections, std::vector<std
             inspection1->setPixmap(QPixmap::fromImage(qtImage));
         }
         else if (i == 1) {
-            inspection2_name->setGeometry(820, 270, 140, 30);
+            inspection2_name->setGeometry(820, 270, 140, 40);
             inspection2_name->setText(QString::fromStdString(inspections_name[i]));
 
             std::string inspections_printed = "Inspected: " + std::to_string(inspections_num[i]);
@@ -222,7 +252,7 @@ void MyWidget::showInspections(std::vector<cv::Mat> inspections, std::vector<std
             inspection2->setPixmap(QPixmap::fromImage(qtImage));
         }
         else if (i == 2) {
-            inspection3_name->setGeometry(820, 500, 140, 30);
+            inspection3_name->setGeometry(820, 500, 140, 40);
             inspection3_name->setText(QString::fromStdString(inspections_name[i]));
 
             std::string inspections_printed = "Inspected: " + std::to_string(inspections_num[i]);
@@ -234,27 +264,27 @@ void MyWidget::showInspections(std::vector<cv::Mat> inspections, std::vector<std
             inspection3->setPixmap(QPixmap::fromImage(qtImage));
         }
         else if (i == 3) {
-            inspection4_name->setGeometry(980 + inspections[1].cols, 40, 140, 30);
+            inspection4_name->setGeometry(960 + inspections[1].cols, 40, 160, 40);
             inspection4_name->setText(QString::fromStdString(inspections_name[i]));
 
             std::string inspections_printed = "Inspected: " + std::to_string(inspections_num[i]);
-            inspection4_number->setGeometry(980 + inspections[1].cols, 70, 140, 30);
+            inspection4_number->setGeometry(960 + inspections[1].cols, 70, 140, 30);
             inspection4_number->setText(QString::fromStdString(inspections_printed));
 
             QImage qtImage(inspections[i].data, inspections[i].cols, inspections[i].rows, inspections[i].step, QImage::Format_BGR888);
-            inspection4->setGeometry(980 + inspections[1].cols, 100, inspections[i].cols, inspections[i].rows);
+            inspection4->setGeometry(960 + inspections[1].cols, 100, inspections[i].cols, inspections[i].rows);
             inspection4->setPixmap(QPixmap::fromImage(qtImage));
         }
         else if (i == 4) {
-            inspection5_name->setGeometry(980 + inspections[2].cols, 270, 140, 30);
+            inspection5_name->setGeometry(960 + inspections[2].cols, 270, 140, 40);
             inspection5_name->setText(QString::fromStdString(inspections_name[i]));
 
             std::string inspections_printed = "Inspected: " + std::to_string(inspections_num[i]);
-            inspection5_number->setGeometry(980 + inspections[1].cols, 300, 140, 30);
+            inspection5_number->setGeometry(960 + inspections[1].cols, 300, 140, 30);
             inspection5_number->setText(QString::fromStdString(inspections_printed));
 
             QImage qtImage(inspections[i].data, inspections[i].cols, inspections[i].rows, inspections[i].step, QImage::Format_BGR888);
-            inspection5->setGeometry(980 + inspections[1].cols, 330, inspections[i].cols, inspections[i].rows);
+            inspection5->setGeometry(960 + inspections[1].cols, 330, inspections[i].cols, inspections[i].rows);
             inspection5->setPixmap(QPixmap::fromImage(qtImage));
         }
     }

@@ -1,6 +1,7 @@
 ARDUINO
 UNO_white
 NVIDIA.
-Arduino_Uno_model
+Arduino_UNO_model
 RaspberryPi_model
 STM32_model
+Jetson_Nano_model

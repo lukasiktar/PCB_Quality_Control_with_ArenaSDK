@@ -23,6 +23,7 @@ public:
 
     void videoDisplayImage(cv::Mat frame);      //Function to display video stream
     void caputureDisplayImage(cv::Mat frame);   //Function to display captured image after inference 
+    void showDetectionCounter(int detections);  //Function to display the number of detections
     void showInspections(std::vector<cv::Mat> inspections, std::vector<std::string> inspections_name, std::vector<int> inspections_num);     //Function to display object's image af ter inpection
     void showOCRdetections(std::vector<cv::Mat> OCRdetections, std::vector<std::string> OCRreads);  //Function to display objects for OCR and OCR readings
 
@@ -44,6 +45,9 @@ private:
 
     QPushButton* captureButton;
     QPushButton* exitButton;
+    
+    
+    QLabel* detection_counter;
 
     QLabel* inspection_sign;
     QLabel* inspection1_name;

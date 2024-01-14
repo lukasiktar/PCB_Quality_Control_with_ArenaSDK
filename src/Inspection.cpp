@@ -17,11 +17,11 @@ cv::Mat Inspection::inspect(cv::Mat frame, Detection detection) {
 	int C = (thresholdValue < 140) ? -18 : 10;
 	std::vector<int> thresh_values;
 	if (thresholdValue < 140) {
-		thresh_values = { 41,61,81};
+		thresh_values = {41,61};
 
 	}
 	else {
-		thresh_values = {41,61,81,101};
+		thresh_values = {21,41,61,121};
 	}
 	cv::Scalar color;
 	if (thresholdValue < 140) {

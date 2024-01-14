@@ -9,3 +9,4 @@ CN7
 CN8
 CN9
 CN10
+Resistor_check_pattern

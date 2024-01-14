@@ -37,10 +37,10 @@ Ethernet_covered
 Graphics_card_Jetson_Xavier
 J38
 J40
-Jetson_HDMI
 Jetson_Nano
 Jetson_Nano_Dev_back
 Jetson_Nano_Dev_board
+Jetson_Nano_model
 Jetson_Xavier_back
 Jetson_Xavier_board
 Jetson_camera_connector
@@ -58,11 +58,9 @@ QR_1
 QR_2
 RAM
 RaspberryPi_CPU
-RaspberryPi_HDMI
 RaspberryPi_back
 RaspberryPi_board
 RaspberryPi_model
-RaspberryPi_power
 Reset
 Resistor_check_pattern
 SSD

@@ -18,7 +18,7 @@ Developed by Luka Siktar
 #include "OCRcustom.h"
 
 #define TIMEOUT 2000
-#define EXPOSURE_TIME 95000.0 //in microseconds
+#define EXPOSURE_TIME 17000.0 //in microseconds
 
 //Function to convert image from Arena format to OpenCV
 cv::Mat ConvertArenaImageToMat(Arena::IImage* pImage) {
@@ -108,11 +108,11 @@ int main(int argc, char* argv[])
     pPixelFormat->SetIntValue(pPixelFormatEntry->GetValue());
     //Set Gain
     GenApi::CFloatPtr pGain = pDevice->GetNodeMap()->GetNode("Gain");
-    double gainValue = 4.0; // Set gain value
+    double gainValue = 2.0; // Set gain value
     pGain->SetValue(gainValue);
     //Set Gamma
     GenApi::CFloatPtr pGamma = pDevice->GetNodeMap()->GetNode("Gamma");
-    double gammaValue = 0.65; // Set gain value
+    double gammaValue = 0.52; // Set gamma value
     pGamma->SetValue(gammaValue);
     
 
@@ -167,12 +167,13 @@ int main(int argc, char* argv[])
                         OCRread OCRobject(image1);
                         OCR_reads.push_back(OCRobject.outputText);
                         if (image1.cols > 100 or image1.rows > 100) {
-                            cv::resize(image1, image1, cv::Size(image1.cols / 2, image1.rows / 2));
+                            cv::resize(image1, image1, cv::Size(image1.cols / 2.5, image1.rows / 2.5));
                         }
                         OCR_read_images.push_back(image1);
                     }
                 }
             }
+            widget.showDetectionCounter(detections);
             widget.showInspections(inspections, inspections_name, inspections_num);
             widget.showOCRdetections(OCR_read_images, OCR_reads);
 
