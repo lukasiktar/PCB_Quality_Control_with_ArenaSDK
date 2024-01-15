@@ -72,7 +72,7 @@
       <AdditionalLibraryDirectories>C:\Program Files\Lucid Vision Labs\Arena SDK\lib64</AdditionalLibraryDirectories>
     </Link>
     <ClCompile>
-      <AdditionalIncludeDirectories>C:\Program Files\Lucid Vision Labs\Arena SDK\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\lukas\OneDrive\Desktop\Projekt\VisualStudio\Qt_PCB_detecton_with_LUCID\include;C:\Users\lukas\OneDrive\Desktop\Projekt\VisualStudio\Qt_PCB_detecton_with_LUCID\Widget;C:\Program Files\Lucid Vision Labs\Arena SDK\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'" Label="Configuration">
@@ -100,17 +100,19 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\acquisition.cpp" />
     <ClCompile Include="src\colors.cpp" />
     <ClCompile Include="src\inference.cpp" />
     <ClCompile Include="src\Inspection.cpp" />
     <ClCompile Include="src\OCRcustom.cpp" />
-    <QtRcc Include="QtWidgetsApplication1.qrc" />
-    <QtUic Include="QtWidgetsApplication1.ui" />
-    <QtMoc Include="MyWidget.h" />
-    <ClCompile Include="MyWidget.cpp" />
+    <QtRcc Include="Widget\QtWidgetsApplication1.qrc" />
+    <QtUic Include="Widget\QtWidgetsApplication1.ui" />
+    <QtMoc Include="Widget\MyWidget.h" />
+    <ClCompile Include="Widget\MyWidget.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\acquisition.h" />
     <ClInclude Include="include\colors.h" />
     <ClInclude Include="include\inference.h" />
     <ClInclude Include="include\Inspection.h" />

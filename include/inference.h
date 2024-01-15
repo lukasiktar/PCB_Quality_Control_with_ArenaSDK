@@ -14,7 +14,7 @@ Originally from Ultralytics, modified by Luka Siktar
 #include <vector>
 #include <string>
 #include <random>
-
+#include "ArenaApi.h"
 // OpenCV / DNN / Inference
 #include <opencv2/imgproc.hpp>
 #include <opencv2/opencv.hpp>
@@ -40,7 +40,6 @@ private:
     void loadClassesFromFile();
     void loadOnnxNetwork();
     cv::Mat formatToSquare(const cv::Mat& source);
-
     std::string modelPath{};
     std::string classesPath{};
     bool cudaEnabled{};

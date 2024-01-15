@@ -23,16 +23,16 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <QtRcc Include="QtWidgetsApplication1.qrc">
+    <QtRcc Include="Widget\QtWidgetsApplication1.qrc">
       <Filter>Resource Files</Filter>
     </QtRcc>
-    <QtUic Include="QtWidgetsApplication1.ui">
+    <QtUic Include="Widget\QtWidgetsApplication1.ui">
       <Filter>Form Files</Filter>
     </QtUic>
-    <QtMoc Include="MyWidget.h">
+    <QtMoc Include="Widget\MyWidget.h">
       <Filter>Header Files</Filter>
     </QtMoc>
-    <ClCompile Include="MyWidget.cpp">
+    <ClCompile Include="Widget\MyWidget.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -52,6 +52,9 @@
     <ClCompile Include="src\OCRcustom.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\acquisition.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\colors.h">
@@ -64,6 +67,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\OCRcustom.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\acquisition.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

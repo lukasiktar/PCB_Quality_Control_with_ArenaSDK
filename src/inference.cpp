@@ -183,3 +183,5 @@ cv::Mat Inference::formatToSquare(const cv::Mat& source)
     source.copyTo(result(cv::Rect(0, 0, col, row)));
     return result;
 }
+
+

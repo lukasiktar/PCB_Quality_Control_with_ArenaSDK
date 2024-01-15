@@ -8,6 +8,7 @@ Developed by Luka Siktar
 #define OCRCUSTOM_H
 
 #include <iostream>
+#include <fstream>
 #include <tesseract/baseapi.h>
 #include <leptonica/allheaders.h>
 #include <opencv2/imgproc.hpp>
@@ -18,7 +19,8 @@ class OCRread {
 public:
     char* outputText;
     cv::Mat OCRimage0;
-
+    std::vector<std::string> inputOCRFile(const std::string& OCRListPath);
+    OCRread();
     OCRread(cv::Mat image);
 
     void OCRreadText();

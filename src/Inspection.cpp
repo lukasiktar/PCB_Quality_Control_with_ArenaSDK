@@ -3,6 +3,18 @@
 Inspect function stores the image, converts it into grayscale and performs adaptive thresholding with a range of thresholding values and seeking for the contours which represents pins or soldering points.
 
 */
+
+std::vector<std::string> Inspection::inputInspectionFile(const std::string& inspectionListPath) {
+	std::ifstream inputFile1(inspectionListPath);
+	std::vector<std::string> inspection_elements;
+	if (inputFile1.is_open()) {
+		std::string line;
+		while (std::getline(inputFile1, line)) { inspection_elements.push_back(line); }
+		inputFile1.close();
+	}
+	return inspection_elements;
+}
+
 cv::Mat Inspection::inspect(cv::Mat frame, Detection detection) {
 	//Converting image to grayscale
 	std::string class_name = std::to_string(detection.detection_id);

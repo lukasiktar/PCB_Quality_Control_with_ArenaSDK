@@ -1,7 +1,20 @@
 #include "OCRcustom.h"
 
+OCRread::OCRread() {}
+
 OCRread::OCRread(cv::Mat image) : OCRimage0(image) {
     OCRreadText();
+}
+
+std::vector<std::string> OCRread::inputOCRFile(const std::string& OCRListPath) {
+    std::ifstream inputFile2(OCRListPath);
+    std::vector<std::string> OCR_elements;
+    if (inputFile2.is_open()) {
+        std::string line;
+        while (std::getline(inputFile2, line)) { OCR_elements.push_back(line); }
+        inputFile2.close();
+    }
+    return OCR_elements;
 }
 
 void OCRread::OCRreadText() {
@@ -25,7 +38,7 @@ void OCRread::OCRreadText() {
 
     //Result of OCR
     outText = api->GetUTF8Text();
-    printf("OCR output:\n");
+    //printf("OCR output:\n");
 
     outputText = outText;
 

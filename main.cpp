@@ -9,78 +9,35 @@ Developed by Luka Siktar
 */
 #include "ArenaApi.h"
 #include <iostream>
-//#include <chrono>
 #include <opencv2/opencv.hpp>
+#include "acquisition.h"
 #include "MyWidget.h"
 #include "colors.h"
 #include "inference.h"
 #include "Inspection.h"
 #include "OCRcustom.h"
 
-#define TIMEOUT 2000
 #define EXPOSURE_TIME 17000.0 //in microseconds
-
-//Function to convert image from Arena format to OpenCV
-cv::Mat ConvertArenaImageToMat(Arena::IImage* pImage) {
-    size_t width = pImage->GetWidth();
-    size_t height = pImage->GetHeight();
-
-    // Create an OpenCV Mat for a 3-channel RGB image
-    cv::Mat cvImage = cv::Mat(height, width, CV_8UC3);
-
-    // Copy data from Arena image to OpenCV Mat
-    const uint8_t* pData = static_cast<const uint8_t*>(pImage->GetData());
-    for (size_t y = 0; y < height; ++y) {
-        for (size_t x = 0; x < width; ++x) {
-            // OpenCV uses BGR format, so the order of channels should be arranged accordingly
-            cvImage.at<cv::Vec3b>(y, x)[0] = pData[(y * width + x) * 3 + 2]; // Blue channel
-            cvImage.at<cv::Vec3b>(y, x)[1] = pData[(y * width + x) * 3 + 1]; // Green channel
-            cvImage.at<cv::Vec3b>(y, x)[2] = pData[(y * width + x) * 3];     // Red channel
-        }
-    }
-    return cvImage;
-}
-
-
-cv::Mat AcquireImages(Arena::IDevice* pDevice) {
-    Arena::IImage* pImage = pDevice->GetImage(TIMEOUT);
-    cv::Mat cvImage = ConvertArenaImageToMat(pImage);
-    pDevice->RequeueBuffer(pImage);
-    return cvImage;
-}
+//Path to the main directory
+std::string projectBasePath = "C:\\Users\\lukas\\OneDrive\\Desktop\\Projekt\\VisualStudio\\Qt_PCB_detecton_with_LUCID";
+//Creating an instance for performing inference (loading YOLOv8 neural network and file with its classes)
+bool runOnGPU = false;
+Inference inf(projectBasePath + "\\source\\models\\YOLOv8m_PCB.onnx", cv::Size(640, 640), projectBasePath + "\\source\\classes\\YOLOv8m_PCB_classes.txt", runOnGPU);
+Inspection photo;
+std::vector<std::string> inspection_elements = photo.inputInspectionFile(projectBasePath + "\\source\\classes\\inspection_classes.txt");
+OCRread OCRlist;
+std::vector<std::string> OCR_elements = OCRlist.inputOCRFile(projectBasePath + "\\source\\classes\\OCR_classes.txt");
+//Additional modification for constant detection and bounding box colors
+Colors color(projectBasePath + "\\source\\classes\\YOLOv8m_PCB_classes.txt");
+std::map<std::string, cv::Scalar> dictionary = color.dictionary;
 
 int main(int argc, char* argv[])
 {
     //Initialization of Qt GUI application:
     QApplication app(argc, argv);
     MyWidget widget;
-
-
-    //Creating an instance for performing inference (loading YOLOv8 neural network and file with its classes)
-    bool runOnGPU = false;
-    std::string projectBasePath = "C:\\Users\\lukas\\OneDrive\\Desktop\\Projekt\\VisualStudio\\Qt_PCB_detecton_with_LUCID";
-    Inference inf(projectBasePath + "\\source\\models\\YOLOv8m_PCB.onnx", cv::Size(640, 640), projectBasePath + "\\source\\classes\\YOLOv8m_PCB_classes.txt", runOnGPU);
-
-    //Loading classes for inspection and OCR
-    std::ifstream inputFile1(projectBasePath + "\\source\\classes\\inspection_classes.txt");
-    std::vector<std::string> inspection_elements;
-    if (inputFile1.is_open()) {
-        std::string line;
-        while (std::getline(inputFile1, line)) { inspection_elements.push_back(line); }
-        inputFile1.close();
-    }
-    std::ifstream inputFile2(projectBasePath + "\\source\\classes\\OCR_classes.txt");
-    std::vector<std::string> OCR_elements;
-    if (inputFile2.is_open()) {
-        std::string line;
-        while (std::getline(inputFile2, line)) { OCR_elements.push_back(line); }
-        inputFile2.close();
-    }
-
-    //Additional modification for constant detection and bounding box colors
-    Colors color(projectBasePath + "\\source\\classes\\YOLOv8m_PCB_classes.txt");
-    std::map<std::string, cv::Scalar> dictionary = color.dictionary;
-
+    acquisition acq;
+   
     //Inintialization of video stream
     Arena::ISystem* pSystem = Arena::OpenSystem();
     pSystem->UpdateDevices(100);
@@ -124,7 +81,7 @@ int main(int argc, char* argv[])
     QObject::connect(&widget, &MyWidget::captureRequested, [&]() {
         //auto start = std::chrono::high_resolution_clock::now();
 
-        capturedFrame= AcquireImages(pDevice);
+        capturedFrame= acq.AcquireImages(pDevice);
 
         //Check if captured image is sent and read properly
         if (!capturedFrame.empty()) {
@@ -151,19 +108,16 @@ int main(int argc, char* argv[])
 
                 //Inspection
                 for (auto obj : inspection_elements) {
-                    //if (detection.className == "40_pins" or detection.className == "6_pins" or detection.className == "Check_pattern_1" or detection.className == "Check_pattern_2" or detection.className == "Check_pattern_3" or detection.className == "Check_pattern_4" or detection.className == "CN7" or detection.className == "CN8" or detection.className == "CN9" or detection.className == "CN10") {
                     if (detection.className == obj) {
-                        Inspection photo;
                         inspections.push_back(photo.inspect(image1, detection));
                         inspections_num.push_back(photo.boxes_number);
                         inspections_name.push_back(detection.className);
                     }
                 }
-
+                
                 //OCR read
                 for (auto obj : OCR_elements) {
                     if (detection.className == obj) {
-                        //if (detection.className == "ARDUINO" or detection.className == "UNO_white" or detection.className == "NVIDIA." or detection.className == "Arduino_UNO_model" or detection.className == "RaspberryPi_model" or detection.className == "STM32_model") {
                         OCRread OCRobject(image1);
                         OCR_reads.push_back(OCRobject.outputText);
                         if (image1.cols > 100 or image1.rows > 100) {
@@ -172,6 +126,7 @@ int main(int argc, char* argv[])
                         OCR_read_images.push_back(image1);
                     }
                 }
+                
             }
             widget.showDetectionCounter(detections);
             widget.showInspections(inspections, inspections_name, inspections_num);
@@ -222,7 +177,7 @@ int main(int argc, char* argv[])
     //Main infinite loop ( loop reads image and streams it to the GUI)
     while (true) {
         cv::Mat frame;
-        frame=AcquireImages(pDevice);
+        frame=acq.AcquireImages(pDevice);
 
         //Check if the there is any frame to read
         if (frame.empty())
@@ -241,35 +196,4 @@ int main(int argc, char* argv[])
     }
 
     return app.exec();
-}
-
-//Additional function for transforming QImage format (used for Qt GUI) to Mat format (used for OpenCV)
-cv::Mat QImageToCvMat(const QImage& image)
-{
-    cv::Mat mat;
-    switch (image.format()) {
-    case QImage::Format_RGB888:
-        mat = cv::Mat(image.height(), image.width(), CV_8UC3, const_cast<uchar*>(image.bits()), image.bytesPerLine());
-        cv::cvtColor(mat, mat, cv::COLOR_BGR2RGB); // Optional: Convert BGR to RGB format
-        break;
-    default:
-        mat = cv::Mat();
-        break;
-    }
-    return mat;
-}
-
-//Additional function for transforming Mat format (used fot OpenCV) to QImage format (used for GUI)
-QImage CvMatToQImage(const cv::Mat& mat)
-{
-    QImage image;
-    switch (mat.type()) {
-    case CV_8UC3:
-        image = QImage(mat.data, mat.cols, mat.rows, mat.step, QImage::Format_RGB888);
-        break;
-    default:
-        image = QImage();
-        break;
-    }
-    return image;
 }

@@ -22,6 +22,8 @@ class Inspection {
 public:
 	int boxes_number;
 	cv::Mat inspect(cv::Mat frame, Detection detection);
+	std::vector<std::string> inputInspectionFile(const std::string& inspectionListPath);
+
 };
 
 #endif // INSPECTION_H
