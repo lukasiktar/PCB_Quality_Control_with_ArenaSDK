@@ -2,8 +2,6 @@
 This is the header file for performing inference using YOLOv8 neural network. Header file is originally cloned from official Ultralytics repository (https://github.com/ultralytics/ultralytics/tree/main/examples/YOLOv8-CPP-Inference)
 Ultralytics is the creator of YOLOv5, YOLOv8, YOLO-NAS etc.
 
-Originally from Ultralytics, modified by Luka Siktar
-10.05.2023.
 */
 
 #ifndef INFERENCE_H

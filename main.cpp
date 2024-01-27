@@ -4,8 +4,6 @@ The project requires installation and importing some libraries:
 * OpenCV with CUDA and cuDNN
 * Tesseract with Leptonica
 
-Developed by Luka Siktar
-10.05.2023.
 */
 #include "ArenaApi.h"
 #include <iostream>
@@ -18,15 +16,19 @@ Developed by Luka Siktar
 #include "OCRcustom.h"
 
 #define EXPOSURE_TIME 17000.0 //in microseconds
+
 //Path to the main directory
 std::string projectBasePath = "C:\\Users\\lukas\\OneDrive\\Desktop\\Projekt\\VisualStudio\\Qt_PCB_detecton_with_LUCID";
 //Creating an instance for performing inference (loading YOLOv8 neural network and file with its classes)
 bool runOnGPU = false;
 Inference inf(projectBasePath + "\\source\\models\\YOLOv8m_PCB.onnx", cv::Size(640, 640), projectBasePath + "\\source\\classes\\YOLOv8m_PCB_classes.txt", runOnGPU);
-Inspection photo;
-std::vector<std::string> inspection_elements = photo.inputInspectionFile(projectBasePath + "\\source\\classes\\inspection_classes.txt");
+//Instance of inspection class
+Inspection inspection;
+std::vector<std::string> inspection_elements = inspection.inputInspectionFile(projectBasePath + "\\source\\classes\\inspection_classes.txt");
+//Instance of OCR class
 OCRread OCRlist;
 std::vector<std::string> OCR_elements = OCRlist.inputOCRFile(projectBasePath + "\\source\\classes\\OCR_classes.txt");
+
 //Additional modification for constant detection and bounding box colors
 Colors color(projectBasePath + "\\source\\classes\\YOLOv8m_PCB_classes.txt");
 std::map<std::string, cv::Scalar> dictionary = color.dictionary;
@@ -36,7 +38,7 @@ int main(int argc, char* argv[])
     //Initialization of Qt GUI application:
     QApplication app(argc, argv);
     MyWidget widget;
-    acquisition acq;
+    acquisition acq;    //Instance of a class for image acquisition and image transforming methods
    
     //Inintialization of video stream
     Arena::ISystem* pSystem = Arena::OpenSystem();
@@ -72,11 +74,11 @@ int main(int argc, char* argv[])
     double gammaValue = 0.52; // Set gamma value
     pGamma->SetValue(gammaValue);
     
-
+    //Start stream
     cv::Mat img;
     pDevice->StartStream();
 
-    //Segment of code performed after the "Capture" button is pressed
+    //Performed after the "Capture" button is pressed
     cv::Mat capturedFrame;
     QObject::connect(&widget, &MyWidget::captureRequested, [&]() {
         //auto start = std::chrono::high_resolution_clock::now();
@@ -92,8 +94,8 @@ int main(int argc, char* argv[])
             std::vector<cv::Mat> inspections;       //Stores all the inspecions images
             std::vector<cv::Mat> OCR_read_images;   //Stores all the images for OCR inspection
             std::vector<std::string> OCR_reads;     //Stores all reads for OCR_read_images
-            std::vector<int> inspections_num;
-            std::vector<std::string> inspections_name;
+            std::vector<int> inspections_num;       //Stores the number of bounding boxes for inspected element
+            std::vector<std::string> inspections_name;  //Stores the name of inspected element
 
             //Loop through detections
             int a = 0;
@@ -102,15 +104,14 @@ int main(int argc, char* argv[])
                 Detection detection = output[i];
                 cv::Rect box = detection.box;                   //bounding box for detection
                 Scalar color = dictionary[detection.className]; //color for bounding box
-
                 Mat image1 = capturedFrame(box).clone();    //Extraction of object from captured image
-                detection.detection_id = a++;                   //rewrite detection class_id-s to enable inspection of element with the same class_name and class_id          
+                detection.detection_id = a++;               //rewrite detection class_id-s to enable inspection of element with the same class_name and class_id          
 
                 //Inspection
                 for (auto obj : inspection_elements) {
                     if (detection.className == obj) {
-                        inspections.push_back(photo.inspect(image1, detection));
-                        inspections_num.push_back(photo.boxes_number);
+                        inspections.push_back(inspection.inspect(image1, detection));
+                        inspections_num.push_back(inspection.boxes_number);
                         inspections_name.push_back(detection.className);
                     }
                 }
@@ -128,6 +129,7 @@ int main(int argc, char* argv[])
                 }
                 
             }
+            //Printing results on GUI
             widget.showDetectionCounter(detections);
             widget.showInspections(inspections, inspections_name, inspections_num);
             widget.showOCRdetections(OCR_read_images, OCR_reads);
@@ -139,40 +141,31 @@ int main(int argc, char* argv[])
                 Detection detection = output[i];
                 cv::Rect box = detection.box;
                 cv::Scalar color = dictionary[detection.className];
-
                 // Detection bounding box
                 cv::rectangle(capturedFrame, box, color, 2);
-
                 // Detection bounding box text
                 //std::string classString = detection.className + ' ' + std::to_string(detection.confidence).substr(0, 4);  //Class name and confidence
                 std::string classString = detection.className;  //Class name
-
                 cv::Size textSize = cv::getTextSize(classString, cv::FONT_HERSHEY_DUPLEX, 1, 2, 0);
                 cv::Rect textBox(box.x, box.y - 40, textSize.width + 10, textSize.height + 20);
 
                 cv::rectangle(capturedFrame, textBox, color, cv::FILLED);
                 cv::putText(capturedFrame, classString, cv::Point(box.x + 5, box.y - 10), cv::FONT_HERSHEY_DUPLEX, 1, cv::Scalar(0, 0, 0), 2, 0);
-                //auto end = std::chrono::high_resolution_clock::now();
-                //auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-                //cv::putText(capturedFrame, to_string(duration.count()), cv::Point(300, 300), cv::FONT_HERSHEY_DUPLEX, 10, cv::Scalar(0, 0, 0), 2, 0);
-
-
             }
         }
         cv::resize(capturedFrame, capturedFrame, cv::Size(capturedFrame.cols / 4, capturedFrame.rows / 4));
-
+        //Printing results on GUI
         widget.caputureDisplayImage(capturedFrame);
         });
-    //Segment of a code performed after "Exit" button is pressed
+    //Performed after "Exit" button is pressed
     QObject::connect(&widget, &MyWidget::exitRequested, [&]() { 
-    pDevice->StopStream();
-    Arena::SetNodeValue<GenICam::gcstring>(pDevice->GetNodeMap(), "AcquisitionMode", acquisitionModeInitial);
-    pSystem->DestroyDevice(pDevice);
-    Arena::CloseSystem(pSystem);
-    app.closeAllWindows();
-    exit(1);
-        });
-
+        pDevice->StopStream();
+        Arena::SetNodeValue<GenICam::gcstring>(pDevice->GetNodeMap(), "AcquisitionMode", acquisitionModeInitial);
+        pSystem->DestroyDevice(pDevice);
+        Arena::CloseSystem(pSystem);
+        app.closeAllWindows();
+        exit(1);
+    });
 
     //Main infinite loop ( loop reads image and streams it to the GUI)
     while (true) {

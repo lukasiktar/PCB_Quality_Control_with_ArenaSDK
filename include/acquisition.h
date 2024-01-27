@@ -1,5 +1,10 @@
+/*
+This is a header file that contains methods for acquisition of image from camera,image conversion from Arena API to OpenCV and converisons between Qt formats and OpenCV
+*/
+
 #ifndef ACQUISITION_H
 #define ACQUISITION_H
+
 #include <iostream>
 #include <fstream>
 #include "ArenaApi.h"

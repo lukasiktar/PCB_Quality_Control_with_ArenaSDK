@@ -1,10 +1,9 @@
 /*
 This is a header file created as addition to a inference. It enables a constant colors of bounding boxes while performing detection of PCBs.
-
-Developed by Luka Siktar
-10.05.2023.
 */
-#pragma once
+#ifndef COLORS_H
+#define COLORS_H
+
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -18,7 +17,8 @@ Developed by Luka Siktar
 using namespace std;
 using namespace cv;
 
-class Colors {
+class Colors 
+{
 public:
     map<string, Scalar> dictionary;
     vector<string> classes;
@@ -29,3 +29,4 @@ public:
     void colorDet();
 
 };
+#endif // COLORS_H

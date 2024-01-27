@@ -1,3 +1,7 @@
+/*
+The header file of GUI widget.
+*/
+
 #ifndef MYWIDGET_H
 #define MYWIDGET_H
 

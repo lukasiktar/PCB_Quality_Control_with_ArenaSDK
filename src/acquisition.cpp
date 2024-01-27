@@ -1,6 +1,7 @@
 #include "acquisition.h"
 #define TIMEOUT 2000    //camera acquisition timeout
 
+//Method for image acquisition from LUCID PHX064S industrial camera
 cv::Mat acquisition::AcquireImages(Arena::IDevice* pDevice) {
     Arena::IImage* pImage = pDevice->GetImage(TIMEOUT);
     cv::Mat cvImage = ConvertArenaImageToMat(pImage);
@@ -8,6 +9,7 @@ cv::Mat acquisition::AcquireImages(Arena::IDevice* pDevice) {
     return cvImage;
 }
 
+//Method for image transformation from Arena image to OpenCV Mat
 cv::Mat acquisition::ConvertArenaImageToMat(Arena::IImage* pImage) {
     size_t width = pImage->GetWidth();
     size_t height = pImage->GetHeight();
@@ -28,6 +30,8 @@ cv::Mat acquisition::ConvertArenaImageToMat(Arena::IImage* pImage) {
     return cvImage;
 }
 
+
+//Method for image transformation from Qt image to OpenCV Mat
 cv::Mat acquisition::QImageToCvMat(const QImage& image) {
     cv::Mat mat;
     switch (image.format()) {
@@ -41,6 +45,8 @@ cv::Mat acquisition::QImageToCvMat(const QImage& image) {
     }
     return mat;
 }
+
+//Method for image transformation from OpenCV Mat to Qt image
 QImage acquisition::CvMatToQImage(const cv::Mat& mat){
     QImage image;
     switch (mat.type()) {

@@ -1,8 +1,5 @@
 /*
 This is a header file which provides code for inspection of PCB elements. It is primarly used to inspect the quality of GPIO and soldering quality inspeciton.
-
-Developed by Luka Siktar
-10.05.2023.
 */
 #ifndef INSPECTION_H
 #define INSPECTION_H
@@ -18,7 +15,8 @@ Developed by Luka Siktar
 #include "opencv2/core.hpp"
 #include "inference.h"
 
-class Inspection {
+class Inspection 
+{
 public:
 	int boxes_number;
 	cv::Mat inspect(cv::Mat frame, Detection detection);

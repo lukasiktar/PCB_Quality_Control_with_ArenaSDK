@@ -1,9 +1,11 @@
 #include "colors.h"
 
+//Constructor
 Colors::Colors(const string& classesTxtFile) : classPath(classesTxtFile) {
     colorDet();
 }
 
+//Method to create dictionary with classes and respectable colors
 void Colors::colorDet() {
     ifstream inputFile(classPath);
     if (inputFile.is_open()) {

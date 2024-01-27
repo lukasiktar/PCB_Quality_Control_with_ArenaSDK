@@ -1,8 +1,5 @@
 /*
 This header file performs OCR read on specified PCB elements.
-
-Developed by Luka Siktar
-10.05.2023.
 */
 #ifndef OCRCUSTOM_H
 #define OCRCUSTOM_H
@@ -15,7 +12,8 @@ Developed by Luka Siktar
 #include <opencv2/opencv.hpp>
 #include <opencv2/dnn.hpp>
 
-class OCRread {
+class OCRread 
+{
 public:
     char* outputText;
     cv::Mat OCRimage0;
